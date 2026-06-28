@@ -1,0 +1,76 @@
+# --- General OS & Editors ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg
+.env
+.venv
+venv/
+ENV/
+env/
+
+# --- C++ & CMake ---
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+CMakefiles/
+Makefile
+cmake_install.cmake
+install/
+log/
+# ROS colcon build artifacts
+build/
+install/
+log/
+
+# --- Arduino & PlatformIO ---
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+**/applet/
+*.elf
+*.hex
+*.eep
+*.lst
+*.o
+*.a
+*.d
+
+# --- CAD & Mechanical Design ---
+# SolidWorks temporary/backup files
+~$*
+*.~*
+*.tmp
+*.bak
+# Fusion360 backup and auto-save (if applicable)
+*.f3d.backup
+
+# --- Log Files ---
+*.log
