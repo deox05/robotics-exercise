@@ -23,7 +23,7 @@ float Kp_align = 0.04;
 //P制御用のゲイン
 float Kp = 0.05; 
 //I制御用のゲイン
-float Ki = 0.01; 
+float Ki = 0.005; 
 int CROSS_THRESHOLD = 3700; 
 
 int v[6] = {0, 0, 0, 0, 0, 0}; 
@@ -53,7 +53,7 @@ void readLineSensors() {
   int sum = 0;
   for (int i = 0; i < 6; i++) {
     sum += v[i];
-    Serial.println(v[i]);
+    //Serial.println(v[i]);
   }
 /*
   Serial.println(v[2]);
@@ -94,7 +94,7 @@ void traceLinePI() {
 
 // 
 void alignToLine() {
-  Serial.println("Start Alignment...");
+  //Serial.println("Start Alignment...");
   while (true) {
     readLineSensors();
     int error = calculateError();
@@ -102,11 +102,11 @@ void alignToLine() {
     //errorの絶対値が5未満だったら停止
     if (abs(error) < 5) {
       setMotors(93, 91);
-      Serial.println("Alignment Complete!");
+      //Serial.println("Alignment Complete!");
       break; 
     }
     
-    //Kp_align = 0.04
+    //Kp_align = 0.03
     float turnSpeed = error * Kp_align;
     
     //振り幅の調整
@@ -114,7 +114,7 @@ void alignToLine() {
     if (turnSpeed < -30) turnSpeed = -30;
     
     // 大きくずれているときと小さくずれているときで区別する
-     if (error >= 5 && turnSpeed < 5) turnSpeed = 5; 
+     if (error >=5 && turnSpeed < 5) turnSpeed = 5; 
      if (error <= -5 && turnSpeed > -5) turnSpeed = -5;
 
     /*
@@ -144,14 +144,14 @@ void alignToLine() {
 // 線が下に来るまで周り続ける
 void turn90Right() {
   setMotors(110, 110); 
-  delay(700); // 最初の線を抜ける
+  delay(400); // 最初の線を抜ける
   
   while (true) {
     readLineSensors();
-    Serial.println(v[2]);
-    Serial.println(v[3]);
+    //Serial.println(v[2]);
+    //Serial.println(v[3]);
     if (v[2] > 400 && v[3] > 400) break;
-    delay(5);
+    //delay(5);
   }
   
   setMotors(93, 91);
@@ -160,14 +160,14 @@ void turn90Right() {
 
 void turn90Left() {
   setMotors(70, 70); 
-  delay(300); // 最初の線を抜ける
+  delay(400); // 最初の線を抜ける
   
   while (true) {
     readLineSensors();
-    Serial.println(v[2]);
-    Serial.println(v[3]);
+    //Serial.println(v[2]);
+    //Serial.println(v[3]);
     if (v[2] > 400 && v[3] > 400) break;
-    delay(10);
+    //delay(10);
   }
   
   setMotors(93, 91);
@@ -199,7 +199,7 @@ void turn180() {
 
 
 void turn180() {
-  Serial.println("turn180: Start (Delay version)");
+  //Serial.println("turn180: Start (Delay version)");
   turn90Left();
   delay(1500);
   alignToLine();
@@ -258,8 +258,8 @@ void turn180() {
 bool isEmptySpot() {
   //全面センサーの値を取得
   int val = analogRead(PIN_IR_FRONT);
-  Serial.print("Front IR: ");
-  Serial.println(val);
+  //Serial.print("Front IR: ");
+  //Serial.println(val);
   //EMPTY_THRESHOLD = 400
   //しきい値400では大体10cmぐらい
   return (val < EMPTY_THRESHOLD);
@@ -276,7 +276,8 @@ bool isCrossroad() {
   // 曲線での誤検知を防ぐ確実な条件
   //CROSS_THRESHOLD =3000
   int sensor = 550;
-  if ( /* sum > CROSS_THRESHOLD && */ v[0] > sensor && v[1] > sensor && v[2] > sensor && v[3] > sensor && v[4] > sensor && v[5] > sensor) {
+  int senser_up = 800;
+  if ( /* sum > CROSS_THRESHOLD && */ v[0] > sensor  && v[1] > sensor && v[2] > sensor && v[3] > sensor && v[4] > sensor && v[5] > sensor) {
     return true;
   }
   return false;
@@ -396,7 +397,7 @@ void loop() {
   if (isCrossroad()) {
     setMotors(93, 91);
     delay(500); // 安定待ち
-    Serial.println("Crossroad Detected! Turning Right...");
+    //Serial.println("Crossroad Detected! Turning Right...");
     setMotors(98,87);
     delay(1200);
     turn90Right();
@@ -405,18 +406,18 @@ void loop() {
     
     alignToLine();
     
-    Serial.println("Test 1 (Turn & Align) Complete.");
+    //Serial.println("Test 1 (Turn & Align) Complete.");
     
-    Serial.println(">>> CHECKING SPOT <<<");
+    //Serial.println(">>> CHECKING SPOT <<<");
     setMotors(93, 91);
     delay(2000); // 【区切り】動作確認用に2秒停止
 
     if (isEmptySpot()) {
-      Serial.println("Spot is EMPTY! Starting Parking Sequence...");
+      //Serial.println("Spot is EMPTY! Starting Parking Sequence...");
       int spotVal = analogRead(PIN_IR_FRONT);
       
       // 180度旋回
-      Serial.println(">>> TURNING 180 <<<");
+      //Serial.println(">>> TURNING 180 <<<");
       setMotors(93, 91);
       delay(2000); // 【区切り】動作確認用に2秒停止
       setMotors(87,98);
@@ -426,31 +427,31 @@ void loop() {
       delay(500);
       alignToLine();
       
-      Serial.println(">>> READY TO BACK UP <<<");
+      //Serial.println(">>> READY TO BACK UP <<<");
       setMotors(93, 91);
       delay(2000); // 【区切り】動作確認用に2秒停止
       
       // バック計算
       float D = 0.00224 * spotVal * spotVal - 2.2585 * spotVal + 654.5;
       float targetDistance = D ;//- 180.0; 
-      int backTimeMs = targetDistance * 6.5;
+      int backTimeMs = targetDistance * 6.3;
       //係数は調整必須（モータの速度に依存するのとその速度での単位時間あたりの進む距離が必要） 
       if (backTimeMs < 0) backTimeMs = 0;
       
-      Serial.print("Target Dist: "); Serial.println(targetDistance);
-      Serial.print("Back Time: "); Serial.println(backTimeMs);
+      //Serial.print("Target Dist: "); Serial.println(targetDistance);
+      //Serial.print("Back Time: "); Serial.println(backTimeMs);
       
-      Serial.println(">>> REVERSING <<<");
-      setMotors(31, 143); // バック出力
+      //Serial.println(">>> REVERSING <<<");
+      setMotors(36, 143); // バック出力
       delay(backTimeMs);
       
-      Serial.println(">>> PARKING COMPLETE! <<<");
+      //Serial.println(">>> PARKING COMPLETE! <<<");
       
-      Serial.println(">>> WAITING 3 SECONDS... <<<");
+      //Serial.println(">>> WAITING 3 SECONDS... <<<");
       setMotors(93, 91);
       delay(3000); // 駐車完了のアピール時間
       
-      Serial.println(">>> LEAVING SPOT (MOVING FORWARD) <<<");
+      //Serial.println(">>> LEAVING SPOT (MOVING FORWARD) <<<");
       setMotors(baseSpeedL, baseSpeedR); // 前進して交差点を探す
       
       // 交差点(メインライン)を見つけるまで前進し続ける
@@ -463,7 +464,7 @@ void loop() {
       
       setMotors(93, 91);
       delay(2000); // 【区切り】動作確認用に2秒停止
-      Serial.println(">>> BACK ON MAIN LINE. TURNING RIGHT TO RESUME <<<");
+      //Serial.println(">>> BACK ON MAIN LINE. TURNING RIGHT TO RESUME <<<");
       
       // 右枠にバック駐車した状態から前進してきたため、今はメインラインに対して「左」を向いています。
       // 元の進行方向を向くには「右」に90度旋回します。
@@ -475,7 +476,7 @@ void loop() {
       
       alignToLine();
       
-      Serial.println(">>> READY TO RESUME TRACE <<<");
+      //Serial.println(">>> READY TO RESUME TRACE <<<");
       setMotors(93, 91);
       delay(2000); // 【区切り】動作確認用に2秒停止
       
@@ -483,10 +484,10 @@ void loop() {
       setMotors(baseSpeedL, baseSpeedR);
       delay(300);
       
-      Serial.println(">>> STEP 3 COMPLETE. RESUMING TRACE! <<<");
+      //Serial.println(">>> STEP 3 COMPLETE. RESUMING TRACE! <<<");
     } else {
-      Serial.println("Spot is FULL.");
-      Serial.println("All Tests Complete. Stopping.");
+      //Serial.println("Spot is FULL.");
+      //Serial.println("All Tests Complete. Stopping.");
       turn90Left();
       delay(200);
     }
